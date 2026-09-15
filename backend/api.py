@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from . import fwknop, rcfile, session, settings as settings_mod
+from . import extip, fwknop, rcfile, session, settings as settings_mod
 from .knocker import OpenWindows
 from .paths import user_fwknoprc
 from .vault import Vault, VaultError, WrongPassword
@@ -173,9 +173,25 @@ class Api:
         if stanza is None:
             return _fail("Стойка не найдена.")
 
+        variables = dict(stanza["vars"])
+        # ALLOW_IP=resolve клиент на Windows не осилит: он зовёт wget по пути,
+        # зашитому при сборке. Узнаём адрес сами и подставляем его явно.
+        allow_ip = variables.get("ALLOW_IP", "").strip().lower()
+        resolved = ""
+        if allow_ip == "resolve":
+            try:
+                resolved = extip.external_ip(variables.get("RESOLVE_URL"))
+            except extip.ResolveError as e:
+                return _fail(
+                    f"Не удалось узнать свой внешний адрес: {e}\n"
+                    "Проверьте подключение к интернету или выберите в стойке "
+                    "«Взять адрес из пакета (source)»."
+                )
+            variables["ALLOW_IP"] = resolved
+
         configured = settings_mod.load().get("fwknop_path") or None
         try:
-            result = fwknop.knock(stanza["vars"], configured)
+            result = fwknop.knock(variables, configured)
         except fwknop.FwknopNotFound as e:
             return _fail(str(e))
         except OSError as e:
@@ -184,9 +200,9 @@ class Api:
         if not result["ok"]:
             return _fail(result["output"] or f"Клиент fwknop вернул код {result['code']}.")
 
-        window = _int_or_none(stanza["vars"].get("FW_TIMEOUT"))
+        window = _int_or_none(variables.get("FW_TIMEOUT"))
         self._windows.opened(name, window)
-        return _ok(window=window or 0, output=result["output"])
+        return _ok(window=window or 0, output=result["output"], allow_ip=resolved)
 
     # --- клиент fwknop ---
 

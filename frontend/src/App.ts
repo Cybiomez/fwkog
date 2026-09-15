@@ -144,11 +144,15 @@ export class App {
     const stanza = this.stanzas.find((s) => s.name === name);
     if (stanza) stanza.remaining = window_;
     updateCardTimer(this.root, name, window_);
+
+    // Если адрес определялся автоматически — показываем, какой именно ушёл.
+    const allowIp = String(result.allow_ip ?? "");
+    const forIp = allowIp ? ` Для адреса ${allowIp}.` : "";
     showToast(
       this.root,
       window_
-        ? `Пакет отправлен: ${name}. Окно ${window_} с.`
-        : `Пакет отправлен: ${name}. Длительность окна задаёт сервер.`
+        ? `Пакет отправлен: ${name}.${forIp} Окно ${window_} с.`
+        : `Пакет отправлен: ${name}.${forIp} Длительность окна задаёт сервер.`
     );
   }
 
