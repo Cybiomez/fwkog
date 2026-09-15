@@ -10,11 +10,9 @@ import { el } from "../dom";
 import * as icons from "../icons";
 import type { Stanza } from "../types";
 
-/** Секунды -> «м:сс» для обратного отсчёта. */
+/** Обратный отсчёт: показываем секунды, чтобы было видно, сколько осталось точно. */
 export function formatLeft(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
+  return `${seconds} с`;
 }
 
 /** Вторая строка карточки: куда стучим и что открываем. */
@@ -38,7 +36,10 @@ export function StanzaCard(stanza: Stanza, handlers: CardHandlers): HTMLElement 
   const timer = el("div", {
     class: "card__timer",
     text: open ? formatLeft(stanza.remaining) : "",
-    attrs: { "data-timer": stanza.name, title: "Осталось от запрошенного окна доступа" },
+    attrs: {
+      "data-timer": stanza.name,
+      title: "Осталось от окна доступа: из настройки стойки или умолчания сервера",
+    },
   });
 
   const knockBtn = el("button", {
