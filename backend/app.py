@@ -13,6 +13,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from . import fwknop
 from .api import Api
 
 WINDOW_W, WINDOW_H = 520, 720
@@ -49,6 +50,7 @@ def main() -> None:
         )
         raise SystemExit(1)
 
+    fwknop.cleanup_stale()  # подчистить временный файл от аварийного запуска
     api = Api()
     window = webview.create_window(
         "FWKOG",

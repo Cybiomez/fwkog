@@ -29,6 +29,9 @@ from .paths import data_dir
 # может содержать пробелы и скобки, а тут нужен предсказуемый идентификатор.
 TEMP_STANZA = "fwkog"
 
+# Имя временного rc-файла со стойкой (создаётся на время вызова клиента).
+RC_NAME = ".fwkog-run.rc"
+
 # Сколько ждём клиент. Запас на случай ALLOW_IP=resolve — там клиент ходит
 # в интернет узнавать свой внешний адрес.
 TIMEOUT_SEC = 25
@@ -107,7 +110,7 @@ def knock(variables: dict[str, str], configured: str | None = None) -> dict:
     интерфейс как есть — по нему видно, что именно не понравилось fwknop.
     """
     exe = find_exe(configured)
-    rc_path = data_dir() / ".fwkog-run.rc"
+    rc_path = data_dir() / RC_NAME
     _write_rc(rc_path, variables)
     try:
         result = _run(
@@ -124,6 +127,14 @@ def knock(variables: dict[str, str], configured: str | None = None) -> dict:
         "output": output.strip(),
         "exe": str(exe),
     }
+
+
+def cleanup_stale() -> None:
+    """Удалить временный rc-файл, оставшийся от аварийно завершённого запуска.
+
+    В обычной жизни файл удаляется сразу после вызова клиента, но если
+    приложение убили ровно в этот момент — на диске остались бы ключи."""
+    (data_dir() / RC_NAME).unlink(missing_ok=True)
 
 
 def _write_rc(path: Path, variables: dict[str, str]) -> None:
