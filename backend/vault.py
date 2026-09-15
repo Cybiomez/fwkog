@@ -127,6 +127,12 @@ class Vault:
     def unlocked(self) -> bool:
         return self._password is not None
 
+    @property
+    def password(self) -> str | None:
+        """Текущий мастер-пароль. Нужен ровно в одном месте — чтобы перезаписать
+        кэш запоминания (см. session.py), когда пользователь меняет его срок."""
+        return self._password
+
     def lock(self) -> None:
         """Забыть пароль и содержимое (выход «на замок» без закрытия приложения)."""
         self._password = None

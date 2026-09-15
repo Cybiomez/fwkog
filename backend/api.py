@@ -206,6 +206,18 @@ class Api:
         data["can_remember"] = session.available()
         return data
 
+    def set_remember_hours(self, hours: int) -> dict:
+        """Сменить срок запоминания мастер-пароля — сразу, без перезапуска."""
+        hours = max(0, int(hours or 0))
+        data = settings_mod.load()
+        data["remember_hours"] = hours
+        settings_mod.save(data)
+        if hours and self._vault.password:
+            session.remember(self._vault.password, hours)
+        else:
+            session.forget()
+        return _ok(remember_hours=hours)
+
     def set_fwknop_path(self, path: str) -> dict:
         data = settings_mod.load()
         data["fwknop_path"] = (path or "").strip()
