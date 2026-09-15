@@ -1,0 +1,27 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- сборка ---
+build/*.spec.bak
+dist/
+*.egg-info/
+
+# --- фронтенд ---
+node_modules/
+frontend/dist/
+
+# --- секреты и локальные данные ---
+*.enc
+.env
+*.key
+fwknoprc*
+!*.md
+
+# --- редакторы и ОС ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
