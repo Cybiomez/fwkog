@@ -14,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from . import extip, fwknop, rcfile, session, settings as settings_mod
-from .knocker import OpenWindows
+from .knocker import DEFAULT_TIMEOUT, OpenWindows
 from .paths import user_fwknoprc
 from .vault import Vault, VaultError, WrongPassword
 from .version import VERSION
@@ -200,9 +200,9 @@ class Api:
         if not result["ok"]:
             return _fail(result["output"] or f"Клиент fwknop вернул код {result['code']}.")
 
-        window = _int_or_none(variables.get("FW_TIMEOUT"))
+        window = _int_or_none(variables.get("FW_TIMEOUT")) or DEFAULT_TIMEOUT
         self._windows.opened(name, window)
-        return _ok(window=window or 0, output=result["output"], allow_ip=resolved)
+        return _ok(window=window, output=result["output"], allow_ip=resolved)
 
     # --- клиент fwknop ---
 

@@ -15,6 +15,17 @@ body {
   overflow-x: hidden;
 }
 
+/* Флажки: размером со строку текста и в цвете темы. Без этого браузер рисует
+   крупный белый квадрат, а правила для полей ввода растягивают его по ширине. */
+input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 /* Скрытие через атрибут hidden. Нужно !important: у полей и блоков задан
    display: flex, который иначе перебивает браузерное правило для [hidden]. */
 [hidden] {
@@ -220,7 +231,9 @@ body {
     width: 100%;
   }
 
-  input {
+  /* Поля ввода — во всю ширину. Флажок «запомнить» под это правило не попадает:
+     он живёт в строке с подписью и растягиваться не должен. */
+  input:not([type="checkbox"]) {
     width: 100%;
     height: 40px;
     padding: 0 12px;
@@ -323,7 +336,7 @@ body {
     font-size: 13px;
     font-variant-numeric: tabular-nums;
     color: var(--accent);
-    min-width: 34px;
+    min-width: 48px;
     text-align: right;
   }
 
