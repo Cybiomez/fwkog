@@ -1,0 +1,5 @@
+# Окно с вебвью (рендерит собранный frontend). Движок системный:
+# WebView2 на Windows, WebKitGTK на Linux.
+pywebview>=5.0
+# Шифрование хранилища стоек: scrypt (пароль -> ключ) и AES-256-GCM.
+cryptography>=41.0

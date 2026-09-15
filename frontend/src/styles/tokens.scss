@@ -1,0 +1,70 @@
+/*
+  Дизайн-токены FWKOG.
+
+  Все цвета — здесь, в CSS-переменных. Компоненты цветов напрямую не пишут,
+  только ссылаются на переменные (var(--...)). Переключение темы = смена
+  значений этих переменных, ничего в компонентах менять не нужно.
+
+  Светлая тема задаётся на :root (по умолчанию), тёмная — под
+  [data-theme="dark"] на <html>; атрибут ставит theme.ts.
+
+  Акцент — синий: цвет «открытого доступа» и главной кнопки «Стук».
+*/
+
+:root {
+  /* --- Радиусы --- */
+  --radius-card: 10px;
+  --radius-pill: 999px;
+  --radius-input: 10px;
+
+  /* --- Переходы (мелкие, реактивные) --- */
+  --t-fast: 130ms ease;
+
+  /* --- Тени (матовые, мягкие) --- */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-pop: 0 8px 30px rgba(0, 0, 0, 0.18);
+
+  /* ============ СВЕТЛАЯ ТЕМА (молочный матовый) ============ */
+  --bg: #ecebe6;
+  --surface: #f6f5f1;
+  --surface-hover: #efeee8;
+  --surface-sunken: #e3e2dc;
+  --border: rgba(38, 40, 45, 0.11);
+  --text: #2a2f36;
+  --text-muted: #6c717a;
+
+  /* Акцент — синий (на светлом фоне темнее, чтобы белый текст читался) */
+  --accent: #1f6bb8;
+  --accent-hover: #1b5fa4;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(31, 107, 184, 0.14); /* подсветка открытой карточки */
+
+  /* Состояния */
+  --status-open: var(--accent);
+  --status-idle: #9a9ea6;
+  --status-error: #c0472f;
+}
+
+:root[data-theme="dark"] {
+  /* ============ ТЁМНАЯ ТЕМА (серый с лёгким синим) ============ */
+  --bg: #1a1d23;
+  --surface: #232830;
+  --surface-hover: #2a3039;
+  --surface-sunken: #161920;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #e3e6ea;
+  --text-muted: #949aa4;
+
+  /* Акцент — голубой: на тёмном фоне светлее и мягче */
+  --accent: #4da3f0;
+  --accent-hover: #63b0f4;
+  --accent-text: #0d1a26;
+  --accent-soft: rgba(77, 163, 240, 0.16);
+
+  --status-open: var(--accent);
+  --status-idle: #5a6069;
+  --status-error: #e06a52;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-pop: 0 10px 34px rgba(0, 0, 0, 0.45);
+}
