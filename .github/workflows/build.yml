@@ -1,0 +1,89 @@
+name: build
+
+# Две вещи:
+#   - на каждый push в dev и на pull request — быстрая проверка, что всё собирается;
+#   - на тег вида v* — полная сборка портативного архива и публикация релиза.
+#     Тег с дефисом (v0.2.0-dev.1) помечается как пред-релиз.
+
+on:
+  push:
+    branches: [dev]
+    tags: ["v*"]
+  pull_request:
+    branches: [dev, main]
+
+permissions:
+  contents: write # нужно для создания релиза и загрузки файлов
+
+jobs:
+  # --- клиент fwknop.exe: собираем из официальных исходников кросс-компилятором ---
+  fwknop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Кросс-компилятор mingw-w64
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64
+      - name: Сборка fwknop.exe
+        run: build/fwknop-windows.sh dist/fwknop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fwknop
+          path: dist/fwknop/
+
+  # --- само приложение: интерфейс + бинарник под Windows ---
+  app:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Сборка интерфейса
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Зависимости Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt pyinstaller
+      - name: Сборка FWKOG.exe
+        run: pyinstaller build/fwkog.spec
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fwkog
+          path: dist/FWKOG.exe
+
+  # --- портативный архив и релиз (только для тегов) ---
+  release:
+    needs: [fwknop, app]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Сборка портативного архива
+        run: |
+          mkdir -p FWKOG
+          cp artifacts/fwkog/FWKOG.exe FWKOG/
+          cp artifacts/fwknop/fwknop.exe FWKOG/
+          cp artifacts/fwknop/fwknop-LICENSE.txt FWKOG/
+          cp README.md FWKOG/README.md
+          zip -r "FWKOG-${GITHUB_REF_NAME}-windows-portable.zip" FWKOG
+
+      - name: Публикация релиза
+        uses: softprops/action-gh-release@v2
+        with:
+          # тег с дефисом → пред-релиз (тестовая сборка)
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: FWKOG-*-windows-portable.zip
