@@ -146,13 +146,46 @@ def _write_rc(path: Path, variables: dict[str, str]) -> None:
 
 
 def _run(cmd: list[str], timeout: int) -> subprocess.CompletedProcess:
-    """Запуск клиента без мигающего чёрного окна консоли на Windows."""
+    """Запуск клиента без мигающего чёрного окна консоли на Windows.
+
+    Вывод читаем байтами и декодируем сами: консольные программы на Windows
+    пишут в кодировке консоли (на русской системе — 866), а Python по умолчанию
+    разобрал бы их кодировкой системы (1251) и получил бы кашу вместо текста."""
     kwargs: dict = {}
     if sys.platform == "win32":
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
     try:
-        return subprocess.run(
-            cmd, capture_output=True, text=True, timeout=timeout, check=False, **kwargs
-        )
+        done = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False, **kwargs)
     except subprocess.TimeoutExpired:
         return subprocess.CompletedProcess(cmd, 124, "", f"клиент не ответил за {timeout} с")
+    return subprocess.CompletedProcess(
+        done.args, done.returncode, _decode(done.stdout), _decode(done.stderr)
+    )
+
+
+def _decode(raw: bytes | None) -> str:
+    """Байты вывода клиента -> текст, кодировкой консоли этой системы."""
+    if not raw:
+        return ""
+    for encoding in _console_encodings():
+        try:
+            return raw.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return raw.decode("utf-8", errors="replace")
+
+
+def _console_encodings() -> list[str]:
+    """Кодировки-кандидаты: на Windows — та, в которой пишет консоль, потом UTF-8."""
+    if sys.platform != "win32":
+        return ["utf-8"]
+    candidates = []
+    try:
+        import ctypes
+
+        # Консольные программы пишут в OEM-кодировке (на русской Windows это 866).
+        candidates.append(f"cp{ctypes.windll.kernel32.GetOEMCP()}")
+    except (OSError, AttributeError):
+        pass
+    candidates += ["cp866", "utf-8", "cp1251"]
+    return candidates

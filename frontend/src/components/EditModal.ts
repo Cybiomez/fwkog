@@ -123,7 +123,7 @@ export function EditModal(stanza: Stanza | null, handlers: EditHandlers): HTMLEl
       : "ip";
   const allowSelect = select(
     [
-      ["resolve", "Узнать мой внешний адрес (resolve)"],
+      ["resolve", "Узнать мой внешний адрес автоматически"],
       ["source", "Взять адрес из пакета (source)"],
       ["ip", "Указать адрес вручную"],
     ],
@@ -276,7 +276,12 @@ export function EditModal(stanza: Stanza | null, handlers: EditHandlers): HTMLEl
       field("Протокол", "SPA_SERVER_PROTO", protoBox),
     ]),
     field("Доступ", "ACCESS — что открыть, например tcp/22", accessBox),
-    field("Чей адрес открывать", "ALLOW_IP", allowSelect),
+    field(
+      "Чей адрес открывать",
+      "ALLOW_IP — «автоматически» узнаёт внешний адрес перед стуком, "
+        + "«из пакета» оставляет это серверу",
+      allowSelect
+    ),
     allowIpField,
     field("Окно доступа, сек", "FW_TIMEOUT — сервер может срезать до своего потолка", timeoutBox),
 
